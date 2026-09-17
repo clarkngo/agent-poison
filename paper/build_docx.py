@@ -6,15 +6,17 @@ everything the template needs that markdown can't express: column widths for the
 three tables, and the section-break trick that lets a table span the full page width
 inside an otherwise two-column body.
 
-Usage: python3 build_docx.py   (run from this directory, against a freshly-unpacked
-`unpacked/word/document.xml` — see the README-style comment at the bottom.)
+Usage: python3 build_docx.py [source.md] [unpacked/word/document.xml]
+(run from this directory, against a freshly-unpacked template — see the
+README-style comment at the bottom.)
 """
 
 import re
+import sys
 from xml.sax.saxutils import escape
 
-MD_PATH = "paper.md"
-DOC_PATH = "unpacked/word/document.xml"
+MD_PATH = sys.argv[1] if len(sys.argv) > 1 else "paper.md"
+DOC_PATH = sys.argv[2] if len(sys.argv) > 2 else "unpacked/word/document.xml"
 
 # Column widths (twips) for each table, keyed by its caption text. Falls back to an
 # even split of the full-width table area if a caption isn't listed here.
@@ -199,6 +201,14 @@ def parse_markdown(path):
         author_lines.append(lines[i].strip())
         i += 1
 
+    # Skip the blank line(s) between the author block and the first real
+    # section so `rest` doesn't start with a stray leading newline -- that
+    # extra newline shifted the blank-line block splitter below by one,
+    # causing the very first block ("## Abstract") to be mis-split into a
+    # leading empty line + "## Abstract" and fall through to plain-paragraph
+    # handling instead of being recognized as a heading.
+    while i < len(lines) and not lines[i].strip():
+        i += 1
     rest = "\n".join(lines[i:])
     blocks = [b for b in re.split(r"\n\s*\n", rest) if b.strip()]
 
@@ -316,14 +326,15 @@ if __name__ == "__main__":
     # "IEEE" / a stale editor's name from the original template file) and replace it
     # with neutral values reflecting this document, not either the template author or
     # us specifically -- avoids leaking an unrelated third party's name in our output.
-    core_path = "unpacked/docProps/core.xml"
+    unpack_root = DOC_PATH.split("/word/")[0]
+    core_path = f"{unpack_root}/docProps/core.xml"
     core_xml = open(core_path, encoding="utf-8").read()
     core_xml = re.sub(r"<dc:title>.*?</dc:title>", f"<dc:title>{title}</dc:title>", core_xml)
     core_xml = re.sub(r"<dc:creator>.*?</dc:creator>", "<dc:creator></dc:creator>", core_xml)
     core_xml = re.sub(r"<cp:lastModifiedBy>.*?</cp:lastModifiedBy>", "<cp:lastModifiedBy></cp:lastModifiedBy>", core_xml)
     open(core_path, "w", encoding="utf-8").write(core_xml)
 
-    app_path = "unpacked/docProps/app.xml"
+    app_path = f"{unpack_root}/docProps/app.xml"
     app_xml = open(app_path, encoding="utf-8").read()
     app_xml = re.sub(r"<vt:lpstr>Paper Title.*?</vt:lpstr>", f"<vt:lpstr>{title}</vt:lpstr>", app_xml)
     app_xml = re.sub(r"<Company>.*?</Company>", "<Company></Company>", app_xml)
