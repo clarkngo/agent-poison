@@ -1,10 +1,7 @@
 % Agent-Poison: Benchmarking Indirect Prompt Injection Resilience in Tool-Calling LLM Agents
 
-Clark Ngo
-School of Technology and Computing
-City University of Seattle
-Seattle, WA, USA
-clarkngo@gmail.com
+Anonymous Author(s)
+Anonymous Institution
 
 ## Abstract
 
