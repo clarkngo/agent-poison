@@ -5,6 +5,11 @@ LLMs handle **indirect prompt injection** delivered through tool outputs during
 multi-turn function-calling loops. Built for reproducible experiments backing an
 IEEE SaTML submission.
 
+**[Read the full results as a plain-language report &rarr;](https://clarkngo.github.io/agent-poison/)**
+(deployed via GitHub Pages from `index.html` at the repo root, using the
+existing `.github/workflows/static.yml` — it redeploys automatically on every
+push to `main`.)
+
 ## Why
 
 Tool-calling agents treat tool output as trusted context. An attacker who
