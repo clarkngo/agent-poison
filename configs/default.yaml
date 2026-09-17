@@ -1,0 +1,21 @@
+# Default configuration for agent-poison.
+# Values here are used as CLI fallbacks; every field can be overridden with a flag.
+
+base_url: http://localhost:11434/v1
+api_key: ollama
+max_turns: 4
+temperature: 0.0
+
+models:
+  - llama3.1:8b
+  - qwen2.5:7b
+  - mistral:7b
+
+defense_modes:
+  - none
+  - xml_delimiters
+  - system_reinforcement
+  - dual_prompt
+
+scenarios_dir: datasets/scenarios
+results_dir: results
