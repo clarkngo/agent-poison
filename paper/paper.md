@@ -166,9 +166,23 @@ agent-poison shows that open-weight, locally-deployed tool-calling agents are me
 
 Immediate next steps: (1) extend the model set to larger open-weight models and at least one safety-tuned variant; (2) add adaptive, optimization-based injections per [8] to establish an upper- rather than lower-bound ASR; (3) grow the scenario set to cross injection strategy and domain independently; (4) implement StruQ-style structured queries [6] as a fourth architectural (not just prompt-level) defense baseline.
 
-## Acknowledgment
+## Ethical Considerations
 
-This work was produced with substantial assistance from Claude (Anthropic), an AI coding agent operating via Claude Code, which designed and implemented the benchmarking harness, executed all experiments against locally-hosted models, and drafted this manuscript. The author directed the research questions, reviewed and approved all methodological decisions, verified experimental results, and is responsible for the final content of this paper.
+This work studies how to make tool-calling AI agents more robust against indirect prompt injection — a defensive goal. Every attack in this benchmark is synthetic and targets only a mocked internal tool server under our control; none was ever directed at a real deployed system, third-party service, or individual, and no human-subject or personally identifiable data was collected or used anywhere in this work. We disclose three injection strategies in enough detail to be reproducible, consistent with established practice in the benchmarks we build on (InjecAgent [3], AgentDojo [4]); none of the techniques are novel or more capable than attacks already documented in the literature we cite. We see no meaningful risk of this paper enabling harm beyond what is already public, and a clear benefit in giving defenders a reproducible way to measure and compare mitigations.
+
+## Open Science
+
+We release every artifact needed to reproduce this work: the agent-poison benchmarking harness (scenario schema, deterministic mock tool server, multi-turn runner, all four defense implementations, and the metrics module), the three scenario definitions, and the raw JSON transcript of every one of the 648 logged runs behind Tables II and III. All of this is available in a fully anonymized repository at `[ANONYMIZED REPOSITORY URL]`, which will remain available for the duration of the review process; the non-anonymized version of the repository will be made public again after the review period. The anonymized repository's commit history, filenames, and file metadata have been scrubbed of any reference to the authors or their institution.
+
+## LLM Usage Considerations
+
+This paper was produced with extensive LLM assistance, both as the subject of study and as a tool in the research process. We address the three considerations below.
+
+**Accountability and correctness.** The authors take full responsibility for the correctness of every claim, number, and piece of code in this paper. All experimental results were independently verified by re-deriving the reported metrics from the raw run transcripts (Open Science, above) using the project's own aggregation code, and by manually inspecting a sample of transcripts to confirm that automated hijack/completion labels matched the model's actual behavior.
+
+**Transparency.** An AI coding agent (Claude, Anthropic, operating via Claude Code) was used throughout the research process: it designed and implemented the benchmarking harness, executed all 648 logged experimental runs against locally-hosted open-weight models, and drafted the text of this manuscript under the direction of the human author, who set the research questions, reviewed and approved methodological decisions (e.g., moving from a single-trial to an 8-trial replication protocol after the tool identified single-sample noise as a threat to validity), and is responsible for the final content.
+
+**Responsibility.** No human-subject or personally identifiable data was collected or used anywhere in this work; all scenario content (documents, support tickets, database rows, and injected instructions) is synthetic and hand-authored for this benchmark. The injection payloads target only fictitious internal tools executed against a fully mocked, offline tool server. All model inference was run locally on consumer hardware via Ollama using existing pre-trained open-weight checkpoints (Llama 3.1 8B, Qwen2.5 7B, Mistral 7B); no models were trained or fine-tuned for this work, limiting the additional environmental footprint to local inference only.
 
 ## References
 
