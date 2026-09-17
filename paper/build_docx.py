@@ -233,12 +233,10 @@ def parse_markdown(path):
             last_heading = htext
             if htext in ("Abstract", "Keywords"):
                 continue  # these styles carry their own inline label; no separate heading
-            if htext == "References":
-                parts.append(heading(5, "References"))
-                reading_references = True
-            elif htext == "Acknowledgment":
-                parts.append(heading(5, "Acknowledgment"))
-                reading_references = False
+            unnumbered_sections = ("References", "Acknowledgment", "Ethical Considerations", "Open Science", "LLM Usage Considerations")
+            if htext in unnumbered_sections:
+                parts.append(heading(5, htext))
+                reading_references = (htext == "References")
             else:
                 parts.append(heading(1, htext))
                 reading_references = False
@@ -313,3 +311,21 @@ if __name__ == "__main__":
     new_xml = head + new_middle + tail
     open(DOC_PATH, "w", encoding="utf-8").write(new_xml)
     print("wrote", DOC_PATH, "new length", len(new_xml))
+
+    # Scrub the template's own leftover author metadata (docProps/core.xml carried
+    # "IEEE" / a stale editor's name from the original template file) and replace it
+    # with neutral values reflecting this document, not either the template author or
+    # us specifically -- avoids leaking an unrelated third party's name in our output.
+    core_path = "unpacked/docProps/core.xml"
+    core_xml = open(core_path, encoding="utf-8").read()
+    core_xml = re.sub(r"<dc:title>.*?</dc:title>", f"<dc:title>{title}</dc:title>", core_xml)
+    core_xml = re.sub(r"<dc:creator>.*?</dc:creator>", "<dc:creator></dc:creator>", core_xml)
+    core_xml = re.sub(r"<cp:lastModifiedBy>.*?</cp:lastModifiedBy>", "<cp:lastModifiedBy></cp:lastModifiedBy>", core_xml)
+    open(core_path, "w", encoding="utf-8").write(core_xml)
+
+    app_path = "unpacked/docProps/app.xml"
+    app_xml = open(app_path, encoding="utf-8").read()
+    app_xml = re.sub(r"<vt:lpstr>Paper Title.*?</vt:lpstr>", f"<vt:lpstr>{title}</vt:lpstr>", app_xml)
+    app_xml = re.sub(r"<Company>.*?</Company>", "<Company></Company>", app_xml)
+    open(app_path, "w", encoding="utf-8").write(app_xml)
+    print("scrubbed docProps metadata")
