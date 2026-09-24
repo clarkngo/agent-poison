@@ -174,7 +174,7 @@ This work studies how to make tool-calling AI agents more robust against indirec
 
 ## Open Science
 
-We release every artifact needed to reproduce this work: the agent-poison benchmarking harness (scenario schema, deterministic mock tool server, multi-turn runner, all four defense implementations, and the metrics module), the three scenario definitions, and the raw JSON transcript of every one of the 648 logged runs behind Tables II and III. All of this is available in a fully anonymized repository at `https://anonymous.4open.science/r/agent-poison-artifact-0418/`, which will remain available for the duration of the review process; the non-anonymized version of the repository will be made public again after the review period. The anonymized repository's commit history, filenames, and file metadata have been scrubbed of any reference to the authors or their institution.
+We release every artifact needed to reproduce this work: the agent-poison benchmarking harness (scenario schema, deterministic mock tool server, multi-turn runner, all four defense implementations, and the metrics module), the three scenario definitions, and the raw JSON transcript of every one of the 648 logged runs behind Tables II and III. All of this is available in a public repository at `https://github.com/clarkngo/agent-poison`.
 
 ## LLM Usage Considerations
 
