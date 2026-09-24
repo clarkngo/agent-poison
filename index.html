@@ -178,6 +178,44 @@
   .gloss-item dt { font-weight: 700; color: var(--ink); font-size: 14.5px; margin-bottom: 4px; }
   .gloss-item dd { margin: 0; color: var(--ink-2); font-size: 14px; }
 
+  /* ---------- PROCESS FLOW ---------- */
+  .flow { margin: 20px 0 28px; display: flex; flex-direction: column; }
+  .flow-step { display: grid; grid-template-columns: 30px 1fr; gap: 14px; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 14px 16px; }
+  .flow-num { width: 30px; height: 30px; border-radius: 50%; background: var(--accent); color: #fff; font-weight: 700; font-size: 13px; display: flex; align-items: center; justify-content: center; }
+  .flow-step h4 { margin: 0 0 3px; font-size: 14.5px; color: var(--ink); display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+  .flow-step p { margin: 0; font-size: 13.5px; max-width: none; }
+  .flow-tag { font-family: var(--font-mono); font-size: 11px; font-weight: 500; background: var(--surface-2); color: var(--ink-2); padding: 2px 7px; border-radius: 6px; }
+  .flow-arrow { text-align: center; color: var(--ink-muted); font-size: 18px; line-height: 1; padding: 6px 0; }
+  .loop { position: relative; border: 1.5px dashed var(--ink-muted); border-radius: 16px; padding: 22px 14px 14px; margin: 4px 0; display: flex; flex-direction: column; }
+  .loop-label { position: absolute; top: -11px; left: 18px; background: var(--page); padding: 0 8px; font-size: 11.5px; font-weight: 700; letter-spacing: 0.03em; color: var(--ink-2); }
+  .outcomes { display: grid; grid-template-columns: 1fr; gap: 10px; }
+  @media (min-width: 720px) { .outcomes { grid-template-columns: repeat(3, 1fr); } }
+  .outcome { background: var(--surface); border: 1px solid var(--border); border-top: 4px solid var(--oc); border-radius: 12px; padding: 12px 14px; font-size: 13.5px; color: var(--ink-2); }
+  .outcome b { display: block; color: var(--ink); font-size: 14px; margin-bottom: 2px; }
+
+  /* ---------- HOW EACH MODEL WAS TESTED ---------- */
+  .tree { margin: 18px 0 22px; }
+  .tree-node { display: flex; gap: 6px 10px; align-items: baseline; flex-wrap: wrap; padding: 8px 12px; margin-left: calc(var(--depth, 0) * 18px); margin-bottom: 6px; border-left: 2px solid var(--accent); background: var(--surface); border-radius: 0 10px 10px 0; font-size: 14px; color: var(--ink-2); }
+  .tree-node b { color: var(--ink); }
+  .tree-node .mult { margin-left: auto; font-family: var(--font-mono); font-size: 12px; font-weight: 700; background: var(--accent-soft); color: var(--accent); padding: 2px 9px; border-radius: 999px; }
+  @media (max-width: 480px) { .tree-node { margin-left: calc(var(--depth, 0) * 10px); } }
+  .eq { display: flex; flex-wrap: wrap; gap: 8px 10px; align-items: center; margin: 8px 0 22px; font-size: 14px; }
+  .eq .chip { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 6px 12px; font-weight: 600; color: var(--ink); font-variant-numeric: tabular-nums; }
+  .eq .chip.total { background: var(--accent-soft); border-color: transparent; color: var(--accent); }
+  .eq .op { color: var(--ink-muted); font-weight: 700; }
+  .phases { display: grid; grid-template-columns: 1fr; gap: 10px; margin: 16px 0 22px; }
+  @media (min-width: 720px) { .phases { grid-template-columns: 1fr auto 1fr; align-items: stretch; } }
+  .phase { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 16px 18px; }
+  .phase-tag { font-size: 11.5px; text-transform: uppercase; letter-spacing: 0.06em; font-weight: 700; color: var(--ink-muted); }
+  .phase h4 { margin: 4px 0 8px; font-size: 15px; color: var(--ink); }
+  .phase p { font-size: 13.5px; margin: 0 0 6px; max-width: none; }
+  .phase p:last-child { margin-bottom: 0; }
+  .phase-arrow { display: flex; align-items: center; justify-content: center; color: var(--ink-muted); font-size: 22px; }
+  .phase-arrow::before { content: "\2193"; }
+  @media (min-width: 720px) { .phase-arrow::before { content: "\2192"; } }
+  table.compact { min-width: 0; }
+  tr.total-row td { font-weight: 700; color: var(--ink); background: var(--surface-2); }
+
   /* ---------- MODEL LEGEND ---------- */
   .model-legend { display: flex; gap: 20px; flex-wrap: wrap; margin: 4px 0 28px; }
   .model-tag { display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 600; }
@@ -398,9 +436,129 @@ This document outlines the phased migration of our internal services from the le
       </div>
     </dl>
 
+    <h3 style="font-size:16px; margin: 32px 0 6px;">What happens in one test</h3>
+    <p>Every number on this page comes from repeating one short loop hundreds of times. Here is that loop, from start to finish.</p>
+
+    <div class="flow">
+      <div class="flow-step">
+        <span class="flow-num">1</span>
+        <div>
+          <h4>Set the scene <span class="flow-tag">scenario.json</span></h4>
+          <p>A scenario file gives the AI a job (say, "summarize document DOC-1042") and a small toolbox: one tool to read the document, and one it should <em>not</em> touch unless asked, such as <code>send_email</code>.</p>
+        </div>
+      </div>
+      <div class="flow-arrow" aria-hidden="true">&darr;</div>
+
+      <div class="loop">
+        <div class="loop-label">&#8635; repeats for up to 4 turns, or until the model stops calling tools</div>
+        <div class="flow-step">
+          <span class="flow-num">2</span>
+          <div>
+            <h4>The model picks a tool <span class="flow-tag">AgentRunner</span></h4>
+            <p>The model, running on a laptop through Ollama, decides to call the reading tool &mdash; exactly what a well-behaved assistant should do.</p>
+          </div>
+        </div>
+        <div class="flow-arrow" aria-hidden="true">&darr;</div>
+        <div class="flow-step">
+          <span class="flow-num">3</span>
+          <div>
+            <h4>A scripted stand-in answers <span class="flow-tag">MockToolServer</span></h4>
+            <p>No real documents, tickets, or databases exist. The stand-in returns fixed text: the clean version for control runs, or the same text with the attack hidden inside for attack runs. Nothing real can be emailed, refunded, or exported.</p>
+          </div>
+        </div>
+        <div class="flow-arrow" aria-hidden="true">&darr;</div>
+        <div class="flow-step">
+          <span class="flow-num">4</span>
+          <div>
+            <h4>A defense may filter the answer <span class="flow-tag">defenses</span></h4>
+            <p>Depending on the setting, the text is passed along untouched, wrapped in warning tags, preceded by an extra warning in the model's instructions, or first screened by a second AI call.</p>
+          </div>
+        </div>
+        <div class="flow-arrow" aria-hidden="true">&darr;</div>
+        <div class="flow-step">
+          <span class="flow-num">5</span>
+          <div>
+            <h4>The model reads it and decides</h4>
+            <p>If it calls another tool, the loop goes around again. Otherwise it gives a final answer, and the test ends in one of three ways:</p>
+          </div>
+        </div>
+      </div>
+      <div class="flow-arrow" aria-hidden="true">&darr;</div>
+
+      <div class="outcomes">
+        <div class="outcome" style="--oc: var(--critical)"><b>Hijacked</b>It called the forbidden tool. The attack worked.</div>
+        <div class="outcome" style="--oc: var(--good)"><b>Did the real job</b>It finished the task it was actually given.</div>
+        <div class="outcome" style="--oc: var(--ink-muted)"><b>Refused</b>It declined to take any action at all.</div>
+      </div>
+      <div class="flow-arrow" aria-hidden="true">&darr;</div>
+
+      <div class="flow-step">
+        <span class="flow-num">6</span>
+        <div>
+          <h4>Save and score <span class="flow-tag">metrics</span></h4>
+          <p>Every run is saved as a JSON transcript. A metrics script then counts how often each outcome happened, giving the Attack Success Rate, Benign Accuracy, Task Interruption, and Refusal figures used throughout this page.</p>
+        </div>
+      </div>
+    </div>
+
     <h3 style="font-size:16px; margin: 28px 0 10px;">Why we had to run each test many times</h3>
     <p>Here's a wrinkle that shaped the whole project. AI models have a setting called <strong>temperature</strong> that controls randomness &mdash; at temperature 0, the model gives the same answer to the same question every single time; above 0, it can respond differently from one attempt to the next, the same way asking a person the same question twice might get you two slightly different answers.</p>
     <p>Our first pass ran every test exactly once, at temperature 0. That felt efficient &mdash; but a single roll of the dice is a bad way to measure a probability. Imagine flipping a coin twice and concluding "this coin lands heads 100% of the time" because you only flipped it once and got heads. That's effectively what a 1-trial ASR measurement does. So for our core comparisons, we reran each condition <strong>8 times</strong> at temperature 0.7 (some randomness allowed) and reported the average &mdash; and, as you'll see below, this completely changed one of our early conclusions.</p>
+
+    <h3 style="font-size:16px; margin: 32px 0 6px;">How each of the three models was tested</h3>
+    <p>All three models went through exactly the same gauntlet, one after another, on the same laptop through Ollama, with the same scenarios, the same defenses, and the same four-turn limit. So when results differ between models, the model is the reason, not the setup. Here is the gauntlet for a single model:</p>
+
+    <div class="tree">
+      <div class="tree-node" style="--depth: 0"><b>One model</b><span>Llama 3.1 8B, Qwen2.5 7B, or Mistral 7B &mdash; the identical steps below repeat for each</span></div>
+      <div class="tree-node" style="--depth: 1"><b>4 defenses</b><span>none &middot; XML tags &middot; system message &middot; dual-prompt</span><span class="mult">&times;4</span></div>
+      <div class="tree-node" style="--depth: 2"><b>3 scenarios</b><span>document summary &middot; support ticket &middot; database report</span><span class="mult">&times;3</span></div>
+      <div class="tree-node" style="--depth: 3"><b>2 conditions</b><span>attack (poisoned tool text) &middot; control (clean tool text)</span><span class="mult">&times;2</span></div>
+      <div class="tree-node" style="--depth: 4"><b>8 repeats</b><span>same test at temperature 0.7, so the model can answer differently each time</span><span class="mult">&times;8</span></div>
+      <div class="tree-node" style="--depth: 5"><b>Record the outcome</b><span>hijacked, did the real job, or refused</span></div>
+    </div>
+
+    <p>Multiplied out, that is 192 runs per model, and 576 across all three. Add the first quick pass and the total comes to 648.</p>
+    <div class="eq">
+      <span class="chip">3 models</span><span class="op">&times;</span>
+      <span class="chip">4 defenses</span><span class="op">&times;</span>
+      <span class="chip">3 scenarios</span><span class="op">&times;</span>
+      <span class="chip">2 conditions</span><span class="op">&times;</span>
+      <span class="chip">8 repeats</span><span class="op">=</span>
+      <span class="chip">576 runs</span><span class="op">+</span>
+      <span class="chip">72 quick-pass runs</span><span class="op">=</span>
+      <span class="chip total">648 total</span>
+    </div>
+
+    <p>We did it in two phases, and the second one existed because the first one misled us:</p>
+    <div class="phases">
+      <div class="phase">
+        <div class="phase-tag">Phase 1</div>
+        <h4>Quick sweep</h4>
+        <p>Temperature 0 (no randomness), 1 run per setting, 72 runs.</p>
+        <p><strong>What it showed:</strong> it looked like a defense made Qwen <em>worse</em>. With only one run per setting, that was too noisy to trust.</p>
+      </div>
+      <div class="phase-arrow" aria-hidden="true"></div>
+      <div class="phase">
+        <div class="phase-tag">Phase 2</div>
+        <h4>Replication</h4>
+        <p>Temperature 0.7, 8 runs per setting, 576 runs.</p>
+        <p><strong>What it showed:</strong> the "backfire" vanished, and the real pattern emerged. Dual-prompt works best, and the system message helps only some models.</p>
+      </div>
+    </div>
+
+    <div class="table-wrap">
+      <table class="compact">
+        <thead>
+          <tr><th>Model</th><th>Quick sweep</th><th>Replication</th><th>Total runs</th></tr>
+        </thead>
+        <tbody>
+          <tr><td class="model-cell"><span class="swatch" style="background:var(--qwen); display:inline-block; margin-right:8px; vertical-align:middle;"></span>Qwen2.5 7B</td><td>24</td><td>192</td><td class="asr-cell">216</td></tr>
+          <tr><td class="model-cell"><span class="swatch" style="background:var(--llama); display:inline-block; margin-right:8px; vertical-align:middle;"></span>Llama 3.1 8B</td><td>24</td><td>192</td><td class="asr-cell">216</td></tr>
+          <tr><td class="model-cell"><span class="swatch" style="background:var(--mistral); display:inline-block; margin-right:8px; vertical-align:middle;"></span>Mistral 7B</td><td>24</td><td>192</td><td class="asr-cell">216</td></tr>
+          <tr class="total-row"><td class="model-cell">All three models</td><td>72</td><td>576</td><td class="asr-cell">648</td></tr>
+        </tbody>
+      </table>
+    </div>
   </div>
 </section>
 
