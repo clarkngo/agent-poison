@@ -46,6 +46,51 @@ often that hijack succeeds, across models and across baseline defenses.
    Benign Accuracy, and Task Interruption Rate, and renders Markdown/LaTeX
    tables.
 
+### What one test run looks like
+
+```mermaid
+flowchart TD
+    A["Scenario JSON<br/>system prompt, user task, tools"] --> B
+    subgraph turns ["Repeats for up to 4 turns"]
+        B["Model via Ollama<br/>picks a tool call"] --> C["Mock tool server<br/>returns clean OR injected text"]
+        C --> D["Defense layer<br/>none / XML tags / system message / dual-prompt"]
+        D --> E{"Model's next move"}
+        E -- "calls another tool" --> B
+    end
+    E --> F["Hijacked<br/>called the unauthorized tool"]
+    E --> G["Completed the real task"]
+    E --> H["Refused"]
+    F --> I["RunResult JSON, then metrics<br/>ASR, Benign Accuracy, Task Interruption, Refusal"]
+    G --> I
+    H --> I
+```
+
+### How the three models were tested
+
+Every model (Llama 3.1 8B, Qwen2.5 7B, Mistral 7B) goes through the identical
+gauntlet on the same machine via Ollama, so differences in results come from the
+model, not the setup:
+
+```
+one model
+ └─ 4 defenses      none · xml_delimiters · system_reinforcement · dual_prompt
+     └─ 3 scenarios     doc_summarizer_exfil · customer_ticket_escalation · sql_report_taint
+         └─ 2 conditions    poisoned tool output (attack) · clean tool output (control)
+             └─ 8 repeats       temperature 0.7  →  record: hijacked / did the task / refused
+```
+
+Two phases:
+
+| Phase | Setup | Runs per model | Total |
+| --- | --- | --- | --- |
+| 1. Quick sweep | temperature 0, 1 run per setting | 24 | 72 |
+| 2. Replication | temperature 0.7, 8 runs per setting | 192 | 576 |
+| | | **216** | **648** |
+
+Phase 2 exists because Phase 1 misled us: with one run per setting, a defense
+appeared to *increase* Qwen's attack success rate, an artifact that vanished
+once each setting was repeated 8 times.
+
 ## Install
 
 ```bash
