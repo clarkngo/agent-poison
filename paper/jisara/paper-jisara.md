@@ -28,6 +28,8 @@ The attacker controls only the content returned by one tool call, never the syst
 
 Each scenario is a validated JSON record: a system prompt, a user prompt, a set of tools in standard function-calling schema, the ground-truth tool call that legitimately completes the task, the unauthorized target tool the injection tries to trigger, and mock return values giving each read-type tool both benign and injected content. A deterministic mock tool server executes every tool call the model makes; it never calls a network or an LLM, so a run is fully reproducible and the only source of variance is the model's own sampling. A multi-turn runner drives a real conversation against any OpenAI-compatible endpoint, executing whatever tool calls come back through the mock server, feeding the results back as tool messages, and repeating for up to four turns or until the model stops calling tools.
 
+![The test loop: the model picks a tool, the mock server returns clean or injected content, the active defense filters it, and the model's next move is scored as hijacked, task completed, or refused. Repeats for up to four turns.](figure1-process-flow.png)
+
 Table 1 summarizes the three scenarios, and Table 2 summarizes the four defenses evaluated.
 
 Table: Scenarios
