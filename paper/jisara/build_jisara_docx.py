@@ -14,9 +14,13 @@ Run from this directory (paper/jisara/) against a freshly-unpacked
 `unpacked/word/document.xml` copied from ISCAPProceedingsTemplate.docx.
 """
 
+import os
 import re
+import shutil
 import sys
 from xml.sax.saxutils import escape
+
+from PIL import Image
 
 MD_PATH = "paper-jisara.md"
 DOC_PATH = "unpacked/word/document.xml"
@@ -98,6 +102,46 @@ def table_caption(text):
     return para(text, sz=18, bold=True, jc="center")
 
 
+def figure_caption(text):
+    return para(text, sz=18, bold=True, jc="center")
+
+
+# Full text-width image (page width 12240 twips - 2*1440 margins = 9360 twips = 6.5in).
+FIGURE_WIDTH_EMU = 5943600  # 6.5in * 914400 EMU/in
+
+
+def image_paragraph(rel_id, width_emu, height_emu, doc_pr_id, name):
+    drawing = (
+        f'<w:drawing>'
+        f'<wp:inline distT="0" distB="0" distL="0" distR="0" '
+        f'xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing">'
+        f'<wp:extent cx="{width_emu}" cy="{height_emu}"/>'
+        f'<wp:effectExtent l="0" t="0" r="0" b="0"/>'
+        f'<wp:docPr id="{doc_pr_id}" name="{esc(name)}"/>'
+        f'<wp:cNvGraphicFramePr>'
+        f'<a:graphicFrameLocks xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" noChangeAspect="1"/>'
+        f'</wp:cNvGraphicFramePr>'
+        f'<a:graphic xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main">'
+        f'<a:graphicData uri="http://schemas.openxmlformats.org/drawingml/2006/picture">'
+        f'<pic:pic xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture">'
+        f'<pic:nvPicPr><pic:cNvPr id="{doc_pr_id}" name="{esc(name)}"/><pic:cNvPicPr/></pic:nvPicPr>'
+        f'<pic:blipFill>'
+        f'<a:blip r:embed="{rel_id}" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"/>'
+        f'<a:stretch><a:fillRect/></a:stretch>'
+        f'</pic:blipFill>'
+        f'<pic:spPr>'
+        f'<a:xfrm><a:off x="0" y="0"/><a:ext cx="{width_emu}" cy="{height_emu}"/></a:xfrm>'
+        f'<a:prstGeom prst="rect"><a:avLst/></a:prstGeom>'
+        f'</pic:spPr>'
+        f'</pic:pic>'
+        f'</a:graphicData>'
+        f'</a:graphic>'
+        f'</wp:inline>'
+        f'</w:drawing>'
+    )
+    return f'<w:p><w:pPr><w:jc w:val="center"/></w:pPr><w:r><w:rPr><w:noProof/></w:rPr>{drawing}</w:r></w:p>'
+
+
 def table(headers, rows, col_widths):
     total = sum(col_widths)
     grid = "".join(f'<w:gridCol w:w="{w}"/>' for w in col_widths)
@@ -153,9 +197,13 @@ def parse_pipe_table(lines):
     return header, rows
 
 
+IMAGE_RE = re.compile(r'^!\[(.*)\]\((.*)\)$')
+
+
 def parse_markdown(path):
     text = open(path, encoding="utf-8").read()
     lines = text.split("\n")
+    md_dir = os.path.dirname(os.path.abspath(path))
 
     title = None
     i = 0
@@ -172,10 +220,12 @@ def parse_markdown(path):
     blocks = [b for b in re.split(r"\n\s*\n", rest) if b.strip()]
 
     parts = []
+    images = []
     last_heading = None
     reading_references = False
     pending_table_caption = None
     table_num = 0
+    figure_num = 0
 
     for block in blocks:
         block_lines = block.split("\n")
@@ -183,6 +233,27 @@ def parse_markdown(path):
 
         if first.startswith("Table: ") and len(block_lines) == 1:
             pending_table_caption = first[len("Table: "):].strip()
+            continue
+
+        m = IMAGE_RE.match(first.strip())
+        if m and len(block_lines) == 1:
+            caption, img_rel_path = m.group(1), m.group(2)
+            img_abs_path = os.path.join(md_dir, img_rel_path)
+            with Image.open(img_abs_path) as im:
+                px_w, px_h = im.size
+            figure_num += 1
+            rel_id = f"rIdImg{len(images) + 1}"
+            width_emu = FIGURE_WIDTH_EMU
+            height_emu = round(width_emu * px_h / px_w)
+            images.append({
+                "rel_id": rel_id,
+                "path": img_abs_path,
+                "ext": os.path.splitext(img_abs_path)[1].lstrip("."),
+            })
+            parts.append(blank())
+            parts.append(image_paragraph(rel_id, width_emu, height_emu, 100 + figure_num, f"Figure {figure_num}"))
+            parts.append(figure_caption(f"Figure {figure_num}. {caption}"))
+            parts.append(blank())
             continue
 
         if first.strip().startswith("|"):
@@ -243,11 +314,11 @@ def parse_markdown(path):
             parts.append(para(ptext, sz=18, jc="both"))
         last_heading = None
 
-    return title, parts
+    return title, parts, images
 
 
 if __name__ == "__main__":
-    title, parts = parse_markdown(MD_PATH)
+    title, parts, images = parse_markdown(MD_PATH)
     print(f"parsed {len(parts)} content blocks from {MD_PATH} ({'FINAL' if FINAL else 'BLIND'} author block)")
 
     xml = open(DOC_PATH, encoding="utf-8").read()
@@ -275,3 +346,40 @@ if __name__ == "__main__":
 
     open(DOC_PATH, "w", encoding="utf-8").write(new_xml)
     print("wrote", DOC_PATH, "new length", len(new_xml))
+
+    if images:
+        word_dir = os.path.dirname(DOC_PATH)
+        media_dir = os.path.join(word_dir, "media")
+        os.makedirs(media_dir, exist_ok=True)
+
+        rels_path = os.path.join(word_dir, "_rels", "document.xml.rels")
+        rels_xml = open(rels_path, encoding="utf-8").read()
+
+        ct_path = os.path.join(os.path.dirname(word_dir), "[Content_Types].xml")
+        ct_xml = open(ct_path, encoding="utf-8").read()
+
+        new_rels = []
+        exts_needed = set()
+        for idx, img in enumerate(images, start=1):
+            media_name = f"image{idx}.{img['ext']}"
+            shutil.copy(img["path"], os.path.join(media_dir, media_name))
+            new_rels.append(
+                f'<Relationship Id="{img["rel_id"]}" '
+                f'Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" '
+                f'Target="media/{media_name}"/>'
+            )
+            exts_needed.add(img["ext"])
+
+        rels_xml = rels_xml.replace("</Relationships>", "".join(new_rels) + "</Relationships>")
+        open(rels_path, "w", encoding="utf-8").write(rels_xml)
+
+        ct_type_map = {"png": "image/png", "jpg": "image/jpeg", "jpeg": "image/jpeg"}
+        ct_additions = "".join(
+            f'<Default Extension="{ext}" ContentType="{ct_type_map.get(ext, "application/octet-stream")}"/>'
+            for ext in exts_needed if f'Extension="{ext}"' not in ct_xml
+        )
+        if ct_additions:
+            ct_xml = ct_xml.replace("</Types>", ct_additions + "</Types>")
+            open(ct_path, "w", encoding="utf-8").write(ct_xml)
+
+        print(f"embedded {len(images)} image(s) into {media_dir}")
