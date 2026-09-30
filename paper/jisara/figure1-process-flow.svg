@@ -8,7 +8,7 @@
   <rect x="0" y="0" width="900" height="640" fill="#ffffff"/>
 
   <!-- Step 1: Scenario -->
-  <rect x="330" y="10" width="240" height="46" rx="6" fill="#ffffff" stroke="#333333" stroke-width="1.5"/>
+  <rect x="260" y="10" width="380" height="46" rx="6" fill="#ffffff" stroke="#333333" stroke-width="1.5"/>
   <text x="450" y="30" text-anchor="middle" font-size="13" font-weight="bold" fill="#111111">1. Scenario</text>
   <text x="450" y="46" text-anchor="middle" font-size="11" fill="#444444">User task + toolset (incl. one forbidden tool)</text>
 
