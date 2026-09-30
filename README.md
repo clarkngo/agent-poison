@@ -142,6 +142,18 @@ agent-poison export-latex --results-dir ./results --output results_table.tex
 - **Refusal Rate** — % of runs where the agent refused outright instead of
   taking any tool action.
 
+## The paper
+
+`paper/` has two submission-ready versions built from the same underlying
+content, since different venues require genuinely different formats:
+
+- `paper/paper.md` → `paper/agent-poison-paper-draft.docx` — IEEE
+  two-column conference format.
+- `paper/jisara/paper-jisara.md` → `paper/jisara/agent-poison-jisara-BLIND.docx`
+  — single-column ISCAP/JISARA format with APA 7th-edition citations. See
+  [`paper/jisara/README.md`](paper/jisara/README.md) for the blind vs.
+  final author-block variants.
+
 ## Adding a scenario
 
 Add a new JSON file to `datasets/scenarios/` following the `Scenario` schema
